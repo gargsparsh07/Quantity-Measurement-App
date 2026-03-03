@@ -2,64 +2,49 @@ package com.bridgelabz;
 
 public class QuantityMeasurementApp {
 
-    // Inner class for Feet
-    public static class Feet {
-        private final double value;
+    public static <U extends IMeasurable>
+    void demonstrateEquality(Quantity<U> q1,
+                             Quantity<U> q2) {
 
-        public Feet(double value) {
-            this.value = value;
-        }
-
-        public double getValue() {
-            return value;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-
-            // Same reference
-            if (this == obj)
-                return true;
-
-            // Null or different type
-            if (obj == null || getClass() != obj.getClass())
-                return false;
-
-            Feet feet = (Feet) obj;
-
-            // Compare using Double.compare
-            return Double.compare(this.value, feet.value) == 0;
-        }
-    }
-    public static class Inches {
-        private final double value;
-
-        public Inches(double value) {
-            this.value = value;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-
-            if (this == obj) return true;
-
-            if (obj == null || getClass() != obj.getClass())
-                return false;
-
-            Inches inches = (Inches) obj;
-
-            return Double.compare(this.value, inches.value) == 0;
-        }
+        System.out.println(q1 + " equals "
+                + q2 + " : "
+                + q1.equals(q2));
     }
 
-    // Main method for manual run
+    public static <U extends IMeasurable>
+    void demonstrateConversion(Quantity<U> q,
+                               U targetUnit) {
+
+        System.out.println(q + " converts to "
+                + q.convertTo(targetUnit));
+    }
+
+    public static <U extends IMeasurable>
+    void demonstrateAddition(Quantity<U> q1,
+                             Quantity<U> q2,
+                             U targetUnit) {
+
+        System.out.println(q1 + " + "
+                + q2 + " = "
+                + q1.add(q2, targetUnit));
+    }
+
     public static void main(String[] args) {
 
-        Feet value1 = new Feet(1.0);
-        Feet value2 = new Feet(1.0);
+        Quantity<LengthUnit> length1 =
+                new Quantity<>(1.0, LengthUnit.FEET);
 
-        boolean result = value1.equals(value2);
+        Quantity<LengthUnit> length2 =
+                new Quantity<>(12.0, LengthUnit.INCHES);
 
-        System.out.println("Are equal? " + result);
+        demonstrateEquality(length1, length2);
+
+        Quantity<WeightUnit> weight1 =
+                new Quantity<>(1.0, WeightUnit.KILOGRAM);
+
+        Quantity<WeightUnit> weight2 =
+                new Quantity<>(1000.0, WeightUnit.GRAM);
+
+        demonstrateEquality(weight1, weight2);
     }
 }
