@@ -34,4 +34,10 @@ class QuantityMeasurementAppTest {
 
         assertTrue(value1.equals(value1));
     }
+    @Test
+    void testEquality_InchesSameValue() {
+        QuantityMeasurementApp.Inches i1 = new QuantityMeasurementApp.Inches(1.0);
+        QuantityMeasurementApp.Inches i2 = new QuantityMeasurementApp.Inches(1.0);
+        assertTrue(i1.equals(i2));
+    }
 }
