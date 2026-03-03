@@ -42,4 +42,25 @@ public class QuantityLength {
         // Convert feet to target unit
         return valueInFeet / target.toFeet(1.0);
     }
+    public QuantityLength add(QuantityLength other) {
+
+        if (other == null) {
+            throw new IllegalArgumentException("Cannot add null quantity");
+        }
+
+        // Convert both to base unit (feet)
+        double sumInFeet = this.toBaseUnit() + other.toBaseUnit();
+
+        // Convert back to the unit of current object
+        double resultValue = sumInFeet / this.unit.toFeet(1.0);
+
+        return new QuantityLength(resultValue, this.unit);
+    }
+    public double getValue() {
+        return value;
+    }
+
+    public LengthUnit getUnit() {
+        return unit;
+    }
 }

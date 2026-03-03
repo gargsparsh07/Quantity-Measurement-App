@@ -109,4 +109,38 @@ class QuantityMeasurementAppTest {
 
         assertEquals(1.0, result, 1e-4);
     }
+    @Test
+    void givenFeetAndInches_WhenAdded_ShouldReturn2Feet() {
+
+        QuantityLength oneFoot =
+                new QuantityLength(1.0, LengthUnit.FEET);
+
+        QuantityLength twelveInches =
+                new QuantityLength(12.0, LengthUnit.INCHES);
+
+        QuantityLength result = oneFoot.add(twelveInches);
+
+        assertEquals(2.0, result.getValue(), 1e-6);
+        assertEquals(LengthUnit.FEET, result.getUnit());
+    }
+
+    @Test
+    void givenYardAndFoot_WhenAdded_ShouldReturn4Feet() {
+
+        QuantityLength oneYard =
+                new QuantityLength(1.0, LengthUnit.YARDS);
+
+        QuantityLength oneFoot =
+                new QuantityLength(1.0, LengthUnit.FEET);
+
+        QuantityLength result = oneYard.add(oneFoot);
+
+        double resultInFeet = QuantityLength.convert(
+                result.getValue(),
+                result.getUnit(),
+                LengthUnit.FEET
+        );
+
+        assertEquals(4.0, resultInFeet, 1e-6);
+    }
 }
