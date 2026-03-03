@@ -200,4 +200,40 @@ class QuantityMeasurementAppTest {
                         .add(new QuantityLength(12.0, LengthUnit.INCHES),
                                 null));
     }
+    @Test
+    void givenGram_WhenConvertedToKilogram_ShouldMatch() {
+
+        QuantityWeight weight =
+                new QuantityWeight(1000.0, WeightUnit.GRAM);
+
+        QuantityWeight result =
+                weight.convertTo(WeightUnit.KILOGRAM);
+
+        assertEquals(1.0, result.getValue(), 1e-6);
+    }
+    @Test
+    void givenDifferentWeightUnits_WhenEqual_ShouldReturnTrue() {
+
+        QuantityWeight w1 =
+                new QuantityWeight(1.0, WeightUnit.KILOGRAM);
+
+        QuantityWeight w2 =
+                new QuantityWeight(1000.0, WeightUnit.GRAM);
+
+        assertTrue(w1.equals(w2));
+    }
+    @Test
+    void givenTwoWeights_WhenAdded_ShouldReturnCorrectResult() {
+
+        QuantityWeight w1 =
+                new QuantityWeight(1.0, WeightUnit.KILOGRAM);
+
+        QuantityWeight w2 =
+                new QuantityWeight(500.0, WeightUnit.GRAM);
+
+        QuantityWeight result =
+                w1.add(w2, WeightUnit.KILOGRAM);
+
+        assertEquals(1.5, result.getValue(), 1e-6);
+    }
 }
