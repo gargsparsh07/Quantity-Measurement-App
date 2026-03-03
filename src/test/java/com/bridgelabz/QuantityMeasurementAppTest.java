@@ -40,4 +40,15 @@ class QuantityMeasurementAppTest {
         QuantityMeasurementApp.Inches i2 = new QuantityMeasurementApp.Inches(1.0);
         assertTrue(i1.equals(i2));
     }
+    @Test
+    void givenFeetAndInches_WhenEqual_ShouldReturnTrue() {
+
+        QuantityLength oneFoot =
+                new QuantityLength(1.0, LengthUnit.FEET);
+
+        QuantityLength twelveInches =
+                new QuantityLength(12.0, LengthUnit.INCHES);
+
+        assertTrue(oneFoot.equals(twelveInches));
+    }
 }
