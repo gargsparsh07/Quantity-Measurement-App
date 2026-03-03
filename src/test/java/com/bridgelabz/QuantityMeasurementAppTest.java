@@ -236,4 +236,56 @@ class QuantityMeasurementAppTest {
 
         assertEquals(1.5, result.getValue(), 1e-6);
     }
+    @Test
+    void givenTwoLengths_WhenSubtracted_ShouldReturnCorrectResult() {
+
+        Quantity<LengthUnit> l1 =
+                new Quantity<>(5.0, LengthUnit.FEET);
+
+        Quantity<LengthUnit> l2 =
+                new Quantity<>(24.0, LengthUnit.INCHES);
+
+        Quantity<LengthUnit> result = l1.subtract(l2);
+
+        assertEquals(3.0, result.getValue());
+    }
+    @Test
+    void givenLengths_WhenSubtractedWithTargetUnit_ShouldReturnCorrectUnit() {
+
+        Quantity<LengthUnit> l1 =
+                new Quantity<>(1.0, LengthUnit.FEET);
+
+        Quantity<LengthUnit> l2 =
+                new Quantity<>(6.0, LengthUnit.INCHES);
+
+        Quantity<LengthUnit> result =
+                l1.subtract(l2, LengthUnit.INCHES);
+
+        assertEquals(6.0, result.getValue());
+    }
+    @Test
+    void givenTwoLengths_WhenDivided_ShouldReturnRatio() {
+
+        Quantity<LengthUnit> l1 =
+                new Quantity<>(2.0, LengthUnit.FEET);
+
+        Quantity<LengthUnit> l2 =
+                new Quantity<>(12.0, LengthUnit.INCHES);
+
+        double ratio = l1.divide(l2);
+
+        assertEquals(2.0, ratio);
+    }
+    @Test
+    void givenZeroQuantity_WhenDividing_ShouldThrowException() {
+
+        Quantity<LengthUnit> l1 =
+                new Quantity<>(2.0, LengthUnit.FEET);
+
+        Quantity<LengthUnit> zero =
+                new Quantity<>(0.0, LengthUnit.INCHES);
+
+        assertThrows(ArithmeticException.class,
+                () -> l1.divide(zero));
+    }
 }
