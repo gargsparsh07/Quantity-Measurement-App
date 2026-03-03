@@ -31,20 +31,34 @@ public class QuantityMeasurementApp {
 
     public static void main(String[] args) {
 
+        // Length Demo
         Quantity<LengthUnit> length1 =
                 new Quantity<>(1.0, LengthUnit.FEET);
 
         Quantity<LengthUnit> length2 =
                 new Quantity<>(12.0, LengthUnit.INCHES);
 
-        demonstrateEquality(length1, length2);
+        System.out.println("Length Equal: " +
+                length1.equals(length2));
 
+        // Weight Demo
         Quantity<WeightUnit> weight1 =
                 new Quantity<>(1.0, WeightUnit.KILOGRAM);
 
         Quantity<WeightUnit> weight2 =
                 new Quantity<>(1000.0, WeightUnit.GRAM);
 
-        demonstrateEquality(weight1, weight2);
+        System.out.println("Weight Equal: " +
+                weight1.equals(weight2));
+
+        // 🔥 UC11 Volume Demo
+        Quantity<VolumeUnit> v1 =
+                new Quantity<>(1.0, VolumeUnit.LITRE);
+
+        Quantity<VolumeUnit> v2 =
+                new Quantity<>(1000.0, VolumeUnit.MILLILITRE);
+
+        System.out.println("Volume Equal: " +
+                v1.equals(v2));
     }
 }
