@@ -51,4 +51,27 @@ class QuantityMeasurementAppTest {
 
         assertTrue(oneFoot.equals(twelveInches));
     }
+    @Test
+    void givenFeetAndYards_WhenEqual_ShouldReturnTrue() {
+
+        QuantityLength threeFeet =
+                new QuantityLength(3.0, LengthUnit.FEET);
+
+        QuantityLength oneYard =
+                new QuantityLength(1.0, LengthUnit.YARDS);
+
+        assertTrue(threeFeet.equals(oneYard));
+    }
+
+    @Test
+    void givenCentimeterAndFeet_WhenEqual_ShouldReturnTrue() {
+
+        QuantityLength thirtyCm =
+                new QuantityLength(30.48, LengthUnit.CENTIMETERS);
+
+        QuantityLength oneFoot =
+                new QuantityLength(1.0, LengthUnit.FEET);
+
+        assertTrue(thirtyCm.equals(oneFoot));
+    }
 }
