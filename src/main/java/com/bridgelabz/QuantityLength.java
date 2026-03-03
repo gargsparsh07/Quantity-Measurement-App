@@ -16,50 +16,50 @@ public class QuantityLength {
         this.unit = unit;
     }
 
-    // Convert current quantity to base unit (Feet)
+    // Convert this quantity to base unit (feet)
     public double toBaseUnit() {
-        return unit.toFeet(value);
+        return unit.toBase(value);
     }
 
     // Convert to another unit
-    public static double convert(double value,
-                                 LengthUnit from,
-                                 LengthUnit to) {
+    public QuantityLength convertTo(LengthUnit targetUnit) {
 
-        if (from == null || to == null)
-            throw new IllegalArgumentException("Invalid unit");
+        if (targetUnit == null)
+            throw new IllegalArgumentException("Invalid target unit");
 
-        double valueInFeet = from.toFeet(value);
-        return valueInFeet / to.toFeet(1.0);
+        double baseValue = this.toBaseUnit();
+        double convertedValue = targetUnit.fromBase(baseValue);
+
+        return new QuantityLength(convertedValue, targetUnit);
     }
 
-    // UC6: Add and return result in current object's unit
+    // UC6
     public QuantityLength add(QuantityLength other) {
 
         if (other == null)
             throw new IllegalArgumentException("Cannot add null");
 
-        double sumInFeet =
+        double sumBase =
                 this.toBaseUnit() + other.toBaseUnit();
 
         double resultValue =
-                sumInFeet / this.unit.toFeet(1.0);
+                unit.fromBase(sumBase);
 
-        return new QuantityLength(resultValue, this.unit);
+        return new QuantityLength(resultValue, unit);
     }
 
-    // UC7: Add with explicit target unit
+    // UC7
     public QuantityLength add(QuantityLength other,
                               LengthUnit targetUnit) {
 
         if (other == null || targetUnit == null)
             throw new IllegalArgumentException("Invalid input");
 
-        double sumInFeet =
+        double sumBase =
                 this.toBaseUnit() + other.toBaseUnit();
 
         double resultValue =
-                sumInFeet / targetUnit.toFeet(1.0);
+                targetUnit.fromBase(sumBase);
 
         return new QuantityLength(resultValue, targetUnit);
     }

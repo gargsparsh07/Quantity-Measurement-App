@@ -3,17 +3,31 @@ package com.bridgelabz;
 public enum LengthUnit {
 
     FEET(1.0),
-    INCHES(1.0 / 12.0),
-    YARDS(3.0),                 // 1 yard = 3 feet
-    CENTIMETERS(0.0328084);     // 1 cm = 0.0328084 feet
+    INCHES(1.0 / 12),
+    YARDS(3.0);
 
-    private final double toFeetFactor;
+    private final double feetFactor;
 
-    LengthUnit(double toFeetFactor) {
-        this.toFeetFactor = toFeetFactor;
+    LengthUnit(double feetFactor) {
+        this.feetFactor = feetFactor;
     }
 
-    public double toFeet(double value) {
-        return value * toFeetFactor;
+    // Convert given value of this unit to feet
+    public double toBase(double value) {
+        return value * feetFactor;
+    }
+
+    // Convert feet to this unit
+    public double fromBase(double baseValue) {
+        return baseValue / feetFactor;
+    }
+
+    // Convert value from one unit to another
+    public static double convert(double value,
+                                 LengthUnit from,
+                                 LengthUnit to) {
+
+        double baseValue = from.toBase(value);
+        return to.fromBase(baseValue);
     }
 }
