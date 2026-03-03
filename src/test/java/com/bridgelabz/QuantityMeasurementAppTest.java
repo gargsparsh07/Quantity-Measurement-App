@@ -143,4 +143,61 @@ class QuantityMeasurementAppTest {
 
         assertEquals(4.0, resultInFeet, 1e-6);
     }
+    @Test
+    void testAddition_ExplicitTargetUnit_Feet() {
+
+        QuantityLength result =
+                new QuantityLength(1.0, LengthUnit.FEET)
+                        .add(new QuantityLength(12.0, LengthUnit.INCHES),
+                                LengthUnit.FEET);
+
+        assertEquals(2.0, result.getValue(), 1e-6);
+        assertEquals(LengthUnit.FEET, result.getUnit());
+    }
+    @Test
+    void testAddition_ExplicitTargetUnit_Inches() {
+
+        QuantityLength result =
+                new QuantityLength(1.0, LengthUnit.FEET)
+                        .add(new QuantityLength(12.0, LengthUnit.INCHES),
+                                LengthUnit.INCHES);
+
+        assertEquals(24.0, result.getValue(), 1e-6);
+        assertEquals(LengthUnit.INCHES, result.getUnit());
+    }
+    @Test
+    void testAddition_ExplicitTargetUnit_Yards() {
+
+        QuantityLength result =
+                new QuantityLength(1.0, LengthUnit.FEET)
+                        .add(new QuantityLength(12.0, LengthUnit.INCHES),
+                                LengthUnit.YARDS);
+
+        assertEquals(0.6667, result.getValue(), 1e-3);
+        assertEquals(LengthUnit.YARDS, result.getUnit());
+    }
+    @Test
+    void testAddition_Commutative_WithTargetUnit() {
+
+        QuantityLength a =
+                new QuantityLength(1.0, LengthUnit.FEET);
+
+        QuantityLength b =
+                new QuantityLength(12.0, LengthUnit.INCHES);
+
+        QuantityLength result1 = a.add(b, LengthUnit.YARDS);
+        QuantityLength result2 = b.add(a, LengthUnit.YARDS);
+
+        assertEquals(result1.getValue(),
+                result2.getValue(),
+                1e-6);
+    }
+    @Test
+    void testAddition_NullTargetUnit() {
+
+        assertThrows(IllegalArgumentException.class, () ->
+                new QuantityLength(1.0, LengthUnit.FEET)
+                        .add(new QuantityLength(12.0, LengthUnit.INCHES),
+                                null));
+    }
 }
