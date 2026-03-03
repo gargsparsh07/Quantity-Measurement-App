@@ -60,5 +60,25 @@ public class QuantityMeasurementApp {
 
         System.out.println("Volume Equal: " +
                 v1.equals(v2));
+
+        Quantity<TemperatureUnit> t1 =
+                new Quantity<>(0.0, TemperatureUnit.CELSIUS);
+
+        Quantity<TemperatureUnit> t2 =
+                new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT);
+
+        System.out.println("Temperature Equal: " + t1.equals(t2));
+
+        Quantity<TemperatureUnit> converted =
+                new Quantity<>(100.0, TemperatureUnit.CELSIUS)
+                        .convertTo(TemperatureUnit.FAHRENHEIT);
+
+        System.out.println("Converted: " + converted);
+
+        try {
+            t1.add(t2);
+        } catch (UnsupportedOperationException e) {
+            System.out.println("Expected Error: " + e.getMessage());
+        }
     }
 }

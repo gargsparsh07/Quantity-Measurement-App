@@ -32,6 +32,9 @@ public class Quantity<U extends IMeasurable> {
         return unit.convertToBaseUnit(value);
     }
 
+    public Quantity<U> convertTo(U temperatureUnit) {
+    }
+
     // ================== ENUM ==================
 
     private enum ArithmeticOperation {
@@ -76,6 +79,9 @@ public class Quantity<U extends IMeasurable> {
 
     private double performBaseArithmetic(Quantity<U> other,
                                          ArithmeticOperation operation) {
+
+        this.unit.validateOperationSupport(operation.name());
+        other.unit.validateOperationSupport(operation.name());
 
         double base1 = this.toBaseUnit();
         double base2 = other.toBaseUnit();

@@ -288,4 +288,38 @@ class QuantityMeasurementAppTest {
         assertThrows(ArithmeticException.class,
                 () -> l1.divide(zero));
     }
+    @Test
+    void testTemperatureEquality_CelsiusToFahrenheit() {
+
+        Quantity<TemperatureUnit> c =
+                new Quantity<>(0.0, TemperatureUnit.CELSIUS);
+
+        Quantity<TemperatureUnit> f =
+                new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT);
+
+        assertTrue(c.equals(f));
+    }
+    @Test
+    void testTemperatureConversion() {
+
+        Quantity<TemperatureUnit> c =
+                new Quantity<>(100.0, TemperatureUnit.CELSIUS);
+
+        Quantity<TemperatureUnit> f =
+                c.convertTo(TemperatureUnit.FAHRENHEIT);
+
+        assertEquals(212.0, f.getValue(), 0.01);
+    }
+    @Test
+    void testTemperatureUnsupportedAdd() {
+
+        Quantity<TemperatureUnit> t1 =
+                new Quantity<>(100.0, TemperatureUnit.CELSIUS);
+
+        Quantity<TemperatureUnit> t2 =
+                new Quantity<>(50.0, TemperatureUnit.CELSIUS);
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> t1.add(t2));
+    }
 }
