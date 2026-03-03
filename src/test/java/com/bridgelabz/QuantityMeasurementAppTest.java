@@ -74,4 +74,39 @@ class QuantityMeasurementAppTest {
 
         assertTrue(thirtyCm.equals(oneFoot));
     }
+    @Test
+    void givenFeet_WhenConvertedToInches_ShouldReturn12() {
+
+        double result = QuantityLength.convert(
+                1.0,
+                LengthUnit.FEET,
+                LengthUnit.INCHES
+        );
+
+        assertEquals(12.0, result, 1e-6);
+    }
+
+    @Test
+    void givenYard_WhenConvertedToFeet_ShouldReturn3() {
+
+        double result = QuantityLength.convert(
+                1.0,
+                LengthUnit.YARDS,
+                LengthUnit.FEET
+        );
+
+        assertEquals(3.0, result, 1e-6);
+    }
+
+    @Test
+    void givenCentimeter_WhenConvertedToFeet_ShouldReturn1() {
+
+        double result = QuantityLength.convert(
+                30.48,
+                LengthUnit.CENTIMETERS,
+                LengthUnit.FEET
+        );
+
+        assertEquals(1.0, result, 1e-4);
+    }
 }

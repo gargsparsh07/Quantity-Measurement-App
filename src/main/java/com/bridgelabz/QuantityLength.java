@@ -28,4 +28,18 @@ public class QuantityLength {
 
         return Double.compare(this.toBaseUnit(), other.toBaseUnit()) == 0;
     }
+    public static double convert(double value,
+                                 LengthUnit source,
+                                 LengthUnit target) {
+
+        if (!Double.isFinite(value) || source == null || target == null) {
+            throw new IllegalArgumentException("Invalid input");
+        }
+
+        // Convert source value to feet first (base unit)
+        double valueInFeet = source.toFeet(value);
+
+        // Convert feet to target unit
+        return valueInFeet / target.toFeet(1.0);
+    }
 }
