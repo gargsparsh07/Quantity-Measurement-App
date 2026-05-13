@@ -1,325 +1,296 @@
 package com.bridgelabz;
 
-import org.junit.jupiter.api.Test;
+import com.bridgelabz.controller.QuantityMeasurementController;
+import com.bridgelabz.exception.QuantityMeasurementException;
+import com.bridgelabz.model.QuantityDTO;
+import com.bridgelabz.model.QuantityMeasurementEntity;
+import com.bridgelabz.repository.IQuantityMeasurementRepository;
+import com.bridgelabz.repository.QuantityMeasurementCacheRepository;
+import com.bridgelabz.service.IQuantityMeasurementService;
+import com.bridgelabz.service.QuantityMeasurementServiceImpl;
+import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class QuantityMeasurementAppTest {
 
-    @Test
-    void testEquality_SameValue() {
-        QuantityMeasurementApp.Feet value1 = new QuantityMeasurementApp.Feet(1.0);
-        QuantityMeasurementApp.Feet value2 = new QuantityMeasurementApp.Feet(1.0);
+    private IQuantityMeasurementRepository repository;
+    private IQuantityMeasurementService    service;
+    private QuantityMeasurementController  controller;
 
-        assertTrue(value1.equals(value2));
+    @BeforeEach
+    void setUp() {
+        repository = QuantityMeasurementCacheRepository.getInstance();
+        repository.clearAll();
+        service    = new QuantityMeasurementServiceImpl(repository);
+        controller = new QuantityMeasurementController(service);
     }
 
-    @Test
-    void testEquality_DifferentValue() {
-        QuantityMeasurementApp.Feet value1 = new QuantityMeasurementApp.Feet(1.0);
-        QuantityMeasurementApp.Feet value2 = new QuantityMeasurementApp.Feet(2.0);
+    // ======================================================
+    // Entity Tests
+    // ======================================================
 
-        assertFalse(value1.equals(value2));
+    @Test @Order(1)
+    void testEntity_SingleOperandConstruction() {
+        QuantityDTO op1    = new QuantityDTO(1.0,  QuantityDTO.LengthUnit.FEET);
+        QuantityDTO result = new QuantityDTO(12.0, QuantityDTO.LengthUnit.INCHES);
+        QuantityMeasurementEntity entity =
+                new QuantityMeasurementEntity("CONVERT", op1, result);
+
+        assertEquals("CONVERT", entity.getOperationType());
+        assertEquals(1.0,       entity.getOperand1().getValue());
+        assertEquals(12.0,      entity.getResult().getValue());
+        assertFalse(entity.hasError());
+        assertNull(entity.getOperand2());
     }
 
-    @Test
-    void testEquality_NullComparison() {
-        QuantityMeasurementApp.Feet value1 = new QuantityMeasurementApp.Feet(1.0);
+    @Test @Order(2)
+    void testEntity_BinaryOperandConstruction() {
+        QuantityDTO op1    = new QuantityDTO(1.0,  QuantityDTO.LengthUnit.FEET);
+        QuantityDTO op2    = new QuantityDTO(12.0, QuantityDTO.LengthUnit.INCHES);
+        QuantityDTO result = new QuantityDTO(2.0,  QuantityDTO.LengthUnit.FEET);
+        QuantityMeasurementEntity entity =
+                new QuantityMeasurementEntity("ADD", op1, op2, result);
 
-        assertFalse(value1.equals(null));
+        assertEquals("ADD", entity.getOperationType());
+        assertEquals(1.0,   entity.getOperand1().getValue());
+        assertEquals(12.0,  entity.getOperand2().getValue());
+        assertEquals(2.0,   entity.getResult().getValue());
+        assertFalse(entity.hasError());
     }
 
-    @Test
-    void testEquality_SameReference() {
-        QuantityMeasurementApp.Feet value1 = new QuantityMeasurementApp.Feet(1.0);
+    @Test @Order(3)
+    void testEntity_ErrorConstruction() {
+        QuantityDTO op1 = new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET);
+        QuantityDTO op2 = new QuantityDTO(1.0, QuantityDTO.WeightUnit.KILOGRAM);
+        QuantityMeasurementEntity entity =
+                new QuantityMeasurementEntity("COMPARE", op1, op2,
+                        "Cross-category not allowed");
 
-        assertTrue(value1.equals(value1));
-    }
-    @Test
-    void testEquality_InchesSameValue() {
-        QuantityMeasurementApp.Inches i1 = new QuantityMeasurementApp.Inches(1.0);
-        QuantityMeasurementApp.Inches i2 = new QuantityMeasurementApp.Inches(1.0);
-        assertTrue(i1.equals(i2));
-    }
-    @Test
-    void givenFeetAndInches_WhenEqual_ShouldReturnTrue() {
-
-        QuantityLength oneFoot =
-                new QuantityLength(1.0, LengthUnit.FEET);
-
-        QuantityLength twelveInches =
-                new QuantityLength(12.0, LengthUnit.INCHES);
-
-        assertTrue(oneFoot.equals(twelveInches));
-    }
-    @Test
-    void givenFeetAndYards_WhenEqual_ShouldReturnTrue() {
-
-        QuantityLength threeFeet =
-                new QuantityLength(3.0, LengthUnit.FEET);
-
-        QuantityLength oneYard =
-                new QuantityLength(1.0, LengthUnit.YARDS);
-
-        assertTrue(threeFeet.equals(oneYard));
+        assertTrue(entity.hasError());
+        assertEquals("Cross-category not allowed", entity.getErrorMessage());
+        assertNull(entity.getResult());
     }
 
-    @Test
-    void givenCentimeterAndFeet_WhenEqual_ShouldReturnTrue() {
+    @Test @Order(4)
+    void testEntity_ToString_Success() {
+        QuantityDTO op1    = new QuantityDTO(1.0,  QuantityDTO.LengthUnit.FEET);
+        QuantityDTO result = new QuantityDTO(12.0, QuantityDTO.LengthUnit.INCHES);
+        QuantityMeasurementEntity entity =
+                new QuantityMeasurementEntity("CONVERT", op1, result);
 
-        QuantityLength thirtyCm =
-                new QuantityLength(30.48, LengthUnit.CENTIMETERS);
-
-        QuantityLength oneFoot =
-                new QuantityLength(1.0, LengthUnit.FEET);
-
-        assertTrue(thirtyCm.equals(oneFoot));
-    }
-    @Test
-    void givenFeet_WhenConvertedToInches_ShouldReturn12() {
-
-        double result = QuantityLength.convert(
-                1.0,
-                LengthUnit.FEET,
-                LengthUnit.INCHES
-        );
-
-        assertEquals(12.0, result, 1e-6);
+        assertTrue(entity.toString().contains("CONVERT"));
+        assertTrue(entity.toString().contains("=>"));
     }
 
-    @Test
-    void givenYard_WhenConvertedToFeet_ShouldReturn3() {
+    @Test @Order(5)
+    void testEntity_ToString_Error() {
+        QuantityDTO op1 = new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET);
+        QuantityDTO op2 = new QuantityDTO(1.0, QuantityDTO.WeightUnit.KILOGRAM);
+        QuantityMeasurementEntity entity =
+                new QuantityMeasurementEntity("COMPARE", op1, op2, "Error msg");
 
-        double result = QuantityLength.convert(
-                1.0,
-                LengthUnit.YARDS,
-                LengthUnit.FEET
-        );
-
-        assertEquals(3.0, result, 1e-6);
+        assertTrue(entity.toString().contains("ERROR"));
+        assertTrue(entity.toString().contains("Error msg"));
     }
 
-    @Test
-    void givenCentimeter_WhenConvertedToFeet_ShouldReturn1() {
+    // ======================================================
+    // Service Tests — Compare
+    // ======================================================
 
-        double result = QuantityLength.convert(
-                30.48,
-                LengthUnit.CENTIMETERS,
-                LengthUnit.FEET
-        );
-
-        assertEquals(1.0, result, 1e-4);
-    }
-    @Test
-    void givenFeetAndInches_WhenAdded_ShouldReturn2Feet() {
-
-        QuantityLength oneFoot =
-                new QuantityLength(1.0, LengthUnit.FEET);
-
-        QuantityLength twelveInches =
-                new QuantityLength(12.0, LengthUnit.INCHES);
-
-        QuantityLength result = oneFoot.add(twelveInches);
-
-        assertEquals(2.0, result.getValue(), 1e-6);
-        assertEquals(LengthUnit.FEET, result.getUnit());
+    @Test @Order(6)
+    void testService_Compare_SameUnit_Equal() {
+        QuantityDTO result = service.compare(
+                new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET),
+                new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET));
+        assertEquals(1.0, result.getValue());
     }
 
-    @Test
-    void givenYardAndFoot_WhenAdded_ShouldReturn4Feet() {
-
-        QuantityLength oneYard =
-                new QuantityLength(1.0, LengthUnit.YARDS);
-
-        QuantityLength oneFoot =
-                new QuantityLength(1.0, LengthUnit.FEET);
-
-        QuantityLength result = oneYard.add(oneFoot);
-
-        double resultInFeet = QuantityLength.convert(
-                result.getValue(),
-                result.getUnit(),
-                LengthUnit.FEET
-        );
-
-        assertEquals(4.0, resultInFeet, 1e-6);
+    @Test @Order(7)
+    void testService_Compare_DifferentUnit_Equal() {
+        QuantityDTO result = service.compare(
+                new QuantityDTO(1.0,  QuantityDTO.LengthUnit.FEET),
+                new QuantityDTO(12.0, QuantityDTO.LengthUnit.INCHES));
+        assertEquals(1.0, result.getValue());
     }
-    @Test
-    void testAddition_ExplicitTargetUnit_Feet() {
 
-        QuantityLength result =
-                new QuantityLength(1.0, LengthUnit.FEET)
-                        .add(new QuantityLength(12.0, LengthUnit.INCHES),
-                                LengthUnit.FEET);
-
-        assertEquals(2.0, result.getValue(), 1e-6);
-        assertEquals(LengthUnit.FEET, result.getUnit());
+    @Test @Order(8)
+    void testService_Compare_NotEqual() {
+        QuantityDTO result = service.compare(
+                new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET),
+                new QuantityDTO(5.0, QuantityDTO.LengthUnit.INCHES));
+        assertEquals(0.0, result.getValue());
     }
-    @Test
-    void testAddition_ExplicitTargetUnit_Inches() {
 
-        QuantityLength result =
-                new QuantityLength(1.0, LengthUnit.FEET)
-                        .add(new QuantityLength(12.0, LengthUnit.INCHES),
-                                LengthUnit.INCHES);
-
-        assertEquals(24.0, result.getValue(), 1e-6);
-        assertEquals(LengthUnit.INCHES, result.getUnit());
+    @Test @Order(9)
+    void testService_Compare_CrossCategory_ThrowsException() {
+        assertThrows(QuantityMeasurementException.class, () ->
+                service.compare(
+                        new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET),
+                        new QuantityDTO(1.0, QuantityDTO.WeightUnit.KILOGRAM)));
     }
-    @Test
-    void testAddition_ExplicitTargetUnit_Yards() {
 
-        QuantityLength result =
-                new QuantityLength(1.0, LengthUnit.FEET)
-                        .add(new QuantityLength(12.0, LengthUnit.INCHES),
-                                LengthUnit.YARDS);
-
-        assertEquals(0.6667, result.getValue(), 1e-3);
-        assertEquals(LengthUnit.YARDS, result.getUnit());
+    @Test @Order(10)
+    void testService_Compare_Temperature_Equal() {
+        QuantityDTO result = service.compare(
+                new QuantityDTO(0.0,  QuantityDTO.TemperatureUnit.CELSIUS),
+                new QuantityDTO(32.0, QuantityDTO.TemperatureUnit.FAHRENHEIT));
+        assertEquals(1.0, result.getValue());
     }
-    @Test
-    void testAddition_Commutative_WithTargetUnit() {
 
-        QuantityLength a =
-                new QuantityLength(1.0, LengthUnit.FEET);
+    // ======================================================
+    // Service Tests — Convert
+    // ======================================================
 
-        QuantityLength b =
-                new QuantityLength(12.0, LengthUnit.INCHES);
-
-        QuantityLength result1 = a.add(b, LengthUnit.YARDS);
-        QuantityLength result2 = b.add(a, LengthUnit.YARDS);
-
-        assertEquals(result1.getValue(),
-                result2.getValue(),
-                1e-6);
+    @Test @Order(11)
+    void testService_Convert_FeetToInches() {
+        QuantityDTO result = service.convert(
+                new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET),
+                new QuantityDTO(0.0, QuantityDTO.LengthUnit.INCHES));
+        assertEquals(12.0, result.getValue(), 1e-6);
     }
-    @Test
-    void testAddition_NullTargetUnit() {
 
-        assertThrows(IllegalArgumentException.class, () ->
-                new QuantityLength(1.0, LengthUnit.FEET)
-                        .add(new QuantityLength(12.0, LengthUnit.INCHES),
-                                null));
-    }
-    @Test
-    void givenGram_WhenConvertedToKilogram_ShouldMatch() {
-
-        QuantityWeight weight =
-                new QuantityWeight(1000.0, WeightUnit.GRAM);
-
-        QuantityWeight result =
-                weight.convertTo(WeightUnit.KILOGRAM);
-
+    @Test @Order(12)
+    void testService_Convert_GramToKilogram() {
+        QuantityDTO result = service.convert(
+                new QuantityDTO(1000.0, QuantityDTO.WeightUnit.GRAM),
+                new QuantityDTO(0.0,    QuantityDTO.WeightUnit.KILOGRAM));
         assertEquals(1.0, result.getValue(), 1e-6);
     }
-    @Test
-    void givenDifferentWeightUnits_WhenEqual_ShouldReturnTrue() {
 
-        QuantityWeight w1 =
-                new QuantityWeight(1.0, WeightUnit.KILOGRAM);
-
-        QuantityWeight w2 =
-                new QuantityWeight(1000.0, WeightUnit.GRAM);
-
-        assertTrue(w1.equals(w2));
+    @Test @Order(13)
+    void testService_Convert_CelsiusToFahrenheit() {
+        QuantityDTO result = service.convert(
+                new QuantityDTO(100.0, QuantityDTO.TemperatureUnit.CELSIUS),
+                new QuantityDTO(0.0,   QuantityDTO.TemperatureUnit.FAHRENHEIT));
+        assertEquals(212.0, result.getValue(), 0.01);
     }
-    @Test
-    void givenTwoWeights_WhenAdded_ShouldReturnCorrectResult() {
 
-        QuantityWeight w1 =
-                new QuantityWeight(1.0, WeightUnit.KILOGRAM);
+    // ======================================================
+    // Service Tests — Add
+    // ======================================================
 
-        QuantityWeight w2 =
-                new QuantityWeight(500.0, WeightUnit.GRAM);
+    @Test @Order(14)
+    void testService_Add_FeetAndInches() {
+        QuantityDTO result = service.add(
+                new QuantityDTO(1.0,  QuantityDTO.LengthUnit.FEET),
+                new QuantityDTO(12.0, QuantityDTO.LengthUnit.INCHES));
+        assertEquals(2.0, result.getValue(), 1e-6);
+    }
 
-        QuantityWeight result =
-                w1.add(w2, WeightUnit.KILOGRAM);
-
+    @Test @Order(15)
+    void testService_Add_KilogramAndGram() {
+        QuantityDTO result = service.add(
+                new QuantityDTO(1.0,   QuantityDTO.WeightUnit.KILOGRAM),
+                new QuantityDTO(500.0, QuantityDTO.WeightUnit.GRAM));
         assertEquals(1.5, result.getValue(), 1e-6);
     }
-    @Test
-    void givenTwoLengths_WhenSubtracted_ShouldReturnCorrectResult() {
 
-        Quantity<LengthUnit> l1 =
-                new Quantity<>(5.0, LengthUnit.FEET);
-
-        Quantity<LengthUnit> l2 =
-                new Quantity<>(24.0, LengthUnit.INCHES);
-
-        Quantity<LengthUnit> result = l1.subtract(l2);
-
-        assertEquals(3.0, result.getValue());
+    @Test @Order(16)
+    void testService_Add_Temperature_ThrowsException() {
+        assertThrows(QuantityMeasurementException.class, () ->
+                service.add(
+                        new QuantityDTO(100.0, QuantityDTO.TemperatureUnit.CELSIUS),
+                        new QuantityDTO(50.0,  QuantityDTO.TemperatureUnit.CELSIUS)));
     }
-    @Test
-    void givenLengths_WhenSubtractedWithTargetUnit_ShouldReturnCorrectUnit() {
 
-        Quantity<LengthUnit> l1 =
-                new Quantity<>(1.0, LengthUnit.FEET);
+    // ======================================================
+    // Service Tests — Subtract
+    // ======================================================
 
-        Quantity<LengthUnit> l2 =
-                new Quantity<>(6.0, LengthUnit.INCHES);
-
-        Quantity<LengthUnit> result =
-                l1.subtract(l2, LengthUnit.INCHES);
-
-        assertEquals(6.0, result.getValue());
+    @Test @Order(17)
+    void testService_Subtract_FeetAndInches() {
+        QuantityDTO result = service.subtract(
+                new QuantityDTO(5.0,  QuantityDTO.LengthUnit.FEET),
+                new QuantityDTO(24.0, QuantityDTO.LengthUnit.INCHES));
+        assertEquals(3.0, result.getValue(), 1e-6);
     }
-    @Test
-    void givenTwoLengths_WhenDivided_ShouldReturnRatio() {
 
-        Quantity<LengthUnit> l1 =
-                new Quantity<>(2.0, LengthUnit.FEET);
+    // ======================================================
+    // Service Tests — Divide
+    // ======================================================
 
-        Quantity<LengthUnit> l2 =
-                new Quantity<>(12.0, LengthUnit.INCHES);
-
-        double ratio = l1.divide(l2);
-
-        assertEquals(2.0, ratio);
+    @Test @Order(18)
+    void testService_Divide_TwoFeetByOneFoot() {
+        QuantityDTO result = service.divide(
+                new QuantityDTO(2.0, QuantityDTO.LengthUnit.FEET),
+                new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET));
+        assertEquals(2.0, result.getValue(), 1e-6);
     }
-    @Test
-    void givenZeroQuantity_WhenDividing_ShouldThrowException() {
 
-        Quantity<LengthUnit> l1 =
-                new Quantity<>(2.0, LengthUnit.FEET);
-
-        Quantity<LengthUnit> zero =
-                new Quantity<>(0.0, LengthUnit.INCHES);
-
-        assertThrows(ArithmeticException.class,
-                () -> l1.divide(zero));
+    @Test @Order(19)
+    void testService_Divide_ByZero_ThrowsException() {
+        assertThrows(QuantityMeasurementException.class, () ->
+                service.divide(
+                        new QuantityDTO(2.0, QuantityDTO.LengthUnit.FEET),
+                        new QuantityDTO(0.0, QuantityDTO.LengthUnit.FEET)));
     }
-    @Test
-    void testTemperatureEquality_CelsiusToFahrenheit() {
 
-        Quantity<TemperatureUnit> c =
-                new Quantity<>(0.0, TemperatureUnit.CELSIUS);
+    // ======================================================
+    // Controller Tests
+    // ======================================================
 
-        Quantity<TemperatureUnit> f =
-                new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT);
-
-        assertTrue(c.equals(f));
+    @Test @Order(20)
+    void testController_Comparison_ReturnsResult() {
+        QuantityDTO result = controller.performComparison(
+                new QuantityDTO(1.0,  QuantityDTO.LengthUnit.FEET),
+                new QuantityDTO(12.0, QuantityDTO.LengthUnit.INCHES));
+        assertNotNull(result);
+        assertEquals(1.0, result.getValue());
     }
-    @Test
-    void testTemperatureConversion() {
 
-        Quantity<TemperatureUnit> c =
-                new Quantity<>(100.0, TemperatureUnit.CELSIUS);
-
-        Quantity<TemperatureUnit> f =
-                c.convertTo(TemperatureUnit.FAHRENHEIT);
-
-        assertEquals(212.0, f.getValue(), 0.01);
+    @Test @Order(21)
+    void testController_CrossCategory_ReturnsNull() {
+        QuantityDTO result = controller.performComparison(
+                new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET),
+                new QuantityDTO(1.0, QuantityDTO.WeightUnit.KILOGRAM));
+        assertNull(result);
     }
-    @Test
-    void testTemperatureUnsupportedAdd() {
 
-        Quantity<TemperatureUnit> t1 =
-                new Quantity<>(100.0, TemperatureUnit.CELSIUS);
+    @Test @Order(22)
+    void testController_Addition_ReturnsResult() {
+        QuantityDTO result = controller.performAddition(
+                new QuantityDTO(1.0,  QuantityDTO.LengthUnit.FEET),
+                new QuantityDTO(12.0, QuantityDTO.LengthUnit.INCHES));
+        assertNotNull(result);
+        assertEquals(2.0, result.getValue(), 1e-6);
+    }
 
-        Quantity<TemperatureUnit> t2 =
-                new Quantity<>(50.0, TemperatureUnit.CELSIUS);
+    @Test @Order(23)
+    void testController_TemperatureAdd_ReturnsNull() {
+        QuantityDTO result = controller.performAddition(
+                new QuantityDTO(100.0, QuantityDTO.TemperatureUnit.CELSIUS),
+                new QuantityDTO(50.0,  QuantityDTO.TemperatureUnit.CELSIUS));
+        assertNull(result);
+    }
 
-        assertThrows(UnsupportedOperationException.class,
-                () -> t1.add(t2));
+    @Test @Order(24)
+    void testController_Division_ReturnsRatio() {
+        QuantityDTO result = controller.performDivision(
+                new QuantityDTO(2.0, QuantityDTO.LengthUnit.FEET),
+                new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET));
+        assertNotNull(result);
+        assertEquals(2.0, result.getValue(), 1e-6);
+    }
+
+    // ======================================================
+    // Repository Tests
+    // ======================================================
+
+    @Test @Order(25)
+    void testRepository_SaveAndRetrieve() {
+        service.compare(
+                new QuantityDTO(1.0,  QuantityDTO.LengthUnit.FEET),
+                new QuantityDTO(12.0, QuantityDTO.LengthUnit.INCHES));
+        assertEquals(1, repository.getAllMeasurements().size());
+    }
+
+    @Test @Order(26)
+    void testRepository_ClearAll() {
+        service.compare(
+                new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET),
+                new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET));
+        repository.clearAll();
+        assertEquals(0, repository.getAllMeasurements().size());
     }
 }
